@@ -1,0 +1,25 @@
+{
+    "name": "LFTP Dev Container",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    // For devleopment, we mount the /downloads volume the downloads folder
+    // in our local workspace
+    "mounts": [
+        "source=${localWorkspaceFolder}/download_target,target=/downloads,type=bind"
+    ],
+    // Set the environment using the .env file
+    "runArgs": ["--env-file", ".env"],
+    // Mount to the /downloads directory
+
+    // Make sure these extensions exist in the dev container
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-azuretools.vscode-docker"
+            ]
+        }
+    }
+}

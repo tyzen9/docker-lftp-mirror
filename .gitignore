@@ -1,0 +1,3 @@
+download_target/.
+!download_target/
+.env
