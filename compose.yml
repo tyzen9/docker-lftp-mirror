@@ -1,0 +1,13 @@
+services:
+  lftp-mirror:
+    image: tyzen9/lftp-mirror:latest
+    container_name: lftp-mirror
+    environment:
+      - TZ_ID=${TZ_ID}
+      - SOURCE_HOSTNAME=${SOURCE_HOSTNAME}
+      - SSH_USERNAME=${SSH_USERNAME}
+      - SSH_PASSWORD=${SSH_PASSWORD}
+      - SOURCE_DIR=${SOURCE_DIR}
+      - SOURCE_EXCLUDES=${SOURCE_EXCLUDES}
+    volumes:
+      - ${LOCAL_TARGET_DIR}:/downloads
