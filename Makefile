@@ -1,7 +1,7 @@
 # Usage: make build push
 DOCKER_USERNAME ?= tyzen9
 APPLICATION_NAME ?= lftp-mirror
-VERSION ?= 0.0.1
+VERSION ?= 1.0.0
  
 build:
 	docker buildx build --platform linux/amd64,linux/arm64 \
