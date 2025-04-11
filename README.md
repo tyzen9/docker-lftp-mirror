@@ -68,7 +68,7 @@ These environment variables are optional, and could be used to adjust functional
 # Development
 This project is designed to be developed with VS code and the [Dev Containers](https://marketplace.visualstudio.com/items/?itemName=ms-vscode-remote.remote-containers) extension. When testing LFTP transfers, the development environment is set to mirror a provided source server with the local `downloads` file.
 
-> [!INFO]
+> [!IMPORTANT]
 > In development, a `.env` file is expected. You can copy `sample.env` to make a `.env` file for testing.
 
 ## Development Environment Requirements
