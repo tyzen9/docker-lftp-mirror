@@ -71,6 +71,12 @@ This project is designed to be developed with VS code and the [Dev Containers](h
 > [!IMPORTANT]
 > In development, a `.env` file is expected. You can copy `sample.env` to make a `.env` file for testing.
 
+To start the project at the resulting dev container command line, issue the following command:
+
+```
+python3 /usr/src/tyzen9/main.py 
+```
+
 ## Development Environment Requirements
 - Docker Engine 
 - Docker Desktop (optional)
