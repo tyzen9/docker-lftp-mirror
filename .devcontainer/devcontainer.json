@@ -7,7 +7,7 @@
     // For devleopment, we mount the /downloads volume the downloads folder
     // in our local workspace
     "mounts": [
-        "source=${localWorkspaceFolder}/download_target,target=/downloads,type=bind"
+        "source=${localWorkspaceFolder}/downloads,target=/downloads,type=bind"
     ],
     // Set the environment using the .env file
     "runArgs": ["--env-file", ".env"],

@@ -30,4 +30,5 @@ COPY app/. tyzen9/.
 COPY lftp.conf /etc/.
 
 # Production entry point
+# --- NOTE: This is NOT executed when starting a dev container
 ENTRYPOINT ["python3", "tyzen9/main.py"]
