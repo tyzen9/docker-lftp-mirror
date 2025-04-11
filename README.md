@@ -61,12 +61,16 @@ These environment variables are optional, and could be used to adjust functional
 | :---   | :--- | :--- | :--- |
 | TZ_ID | string | UTC | Timezone to be running this container as [TZ IDs](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List) |
 | UPDATE_INTERVAL | string | 300 | The number of seconds between LFTP initiated requests |
-| SOURCE_EXCLUDES | string | "\<empty\>" | A comma seperated lists of sources to exclude, [see here](https://www.cyberciti.biz/faq/lftp-command-mirror-x-exclude-files-sub-directory-syntax/) for details. (Example: temp/,freeleech/) |
+| SOURCE_EXCLUDES | string | "\<empty\>" | A comma separated lists of sources to exclude, [see here](https://www.cyberciti.biz/faq/lftp-command-mirror-x-exclude-files-sub-directory-syntax/) for details. (Example: temp/,freeleech/) |
 | SSH_PORT | string | 22 | The ssh port used to  connect to the source server |
 | LOG_LEVEL | string | INFO | Valid values: DEBUG, INFO, WARNING, ERROR, CRITICAL  |
 
 # Development
-This project is designed to be developed with VS code and the [Dev Containers](https://marketplace.visualstudio.com/items/?itemName=ms-vscode-remote.remote-containers) extension.
+This project is designed to be developed with VS code and the [Dev Containers](https://marketplace.visualstudio.com/items/?itemName=ms-vscode-remote.remote-containers) extension. When testing LFTP transfers, the development environment is set to mirror a provided source server with the local `downloads` file.
+
+> [!INFO]
+> In development, a `.env` file is expected. You can copy `sample.env` to make a `.env` file for testing.
+
 ## Development Environment Requirements
 - Docker Engine 
 - Docker Desktop (optional)
