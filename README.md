@@ -89,30 +89,36 @@ The following extensions are recommended to be installed in VS Code:
 - [Docker](https://marketplace.visualstudio.com/items/?itemName=ms-azuretools.vscode-docker)
 - [Python](https://marketplace.visualstudio.com/items/?itemName=ms-python.python)
 
-Steps to Open a Docker Container for development in VS Code
-1. Install the Recommended Extensions (above):
-2. Start Docker:
+### Open the project in a Docker Dev Container for development using VS Code
+1. Install the Recommended extensions (above):
+2. Ensure Docker Desktop (or another Docker service) is running on your system.
+3. In VS Code, Open the Command Palette (Ctrl+Shift+P or Cmd+Shift+P), and Select Dev Containers: `Reopen in Container`
+    - VS Code will build the container based on the `.devcontainer/devcontainer.json` configuration 
+      The first build might take some time, but subsequent openings will be faster.
+7. Develop Inside the Container. 
+    - Once connected, you can use all of VS Code's features (e.g., IntelliSense, debugging) as if working locally.
 
-    Ensure Docker Desktop (or another Docker service) is running on your system.
+## Build & Publish
+Update the `Makefile` to contain the appropriate Docker Hub username, application name and version number
 
-3. Open the Command Palette:
+```
+DOCKER_USERNAME ?= username
+APPLICATION_NAME ?= application-name
+VERSION ?= 1.0.0
+```
 
-    Press Ctrl+Shift+P (or Cmd+Shift+P on macOS) to open the Command Palette.
+To build images of this container, use this command in the root directory of the project:
 
-4. Open Folder in Container:
+```
+make build
+```
 
-    Run the command: Dev Containers: Open Folder in Container....
+To publish th built images to to Docker Hub use this command in the root directory of the project:
 
-5. Select the folder containing your project or configuration files.
-
-6. Build and Open the Container:
-
-    VS Code will build the container based on the `.devcontainer/devcontainer.json` configuration 
-    The first build might take some time, but subsequent openings will be faster.
-
-7. Develop Inside the Container:
-
-    Once connected, you can use all of VS Code's features (e.g., IntelliSense, debugging) as if working locally.
+To build use this command:
+```
+make push
+```
 
 # References
 [Setting up a dockerized Python environment the elegant way](https://towardsdatascience.com/setting-a-dockerized-python-environment-the-elegant-way-f716ef85571d/)
