@@ -4,6 +4,8 @@ services:
     container_name: lftp-mirror
     environment:
       - TZ_ID=${TZ_ID}
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
       - SOURCE_HOSTNAME=${SOURCE_HOSTNAME}
       - SSH_USERNAME=${SSH_USERNAME}
       - SSH_PASSWORD=${SSH_PASSWORD}
