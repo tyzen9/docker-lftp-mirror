@@ -15,8 +15,6 @@ Using LFTP has the following benefits:
 - Automatic resumption of interrupted transfers
 - Retry mechanisms for non-fatal errors
 
-
-
 ## Supported Architectures
 Simply pulling `tyzen9/lftp-mirror:latest` should retrieve the correct image for your arch. The architectures supported by this image are:
 
@@ -37,6 +35,8 @@ services:
     container_name: lftp-mirror
     environment:
       - TZ_ID=${TZ_ID}
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
       - SOURCE_HOSTNAME=${SOURCE_HOSTNAME}
       - SSH_USERNAME=${SSH_USERNAME}
       - SSH_PASSWORD=${SSH_PASSWORD}
@@ -60,6 +60,8 @@ These environment variables are optional, and could be used to adjust functional
 | Variable | Type | Default | Definition |
 | :---   | :--- | :--- | :--- |
 | TZ_ID | string | UTC | Timezone to be running this container as [TZ IDs](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List) |
+| PUID | number | 1000 | The linux user ID to run this process as |
+| PGID | number | 1000 | The linux group ID to run this process as |
 | UPDATE_INTERVAL | string | 300 | The number of seconds between LFTP initiated requests |
 | SOURCE_EXCLUDES | string | "\<empty\>" | A comma separated lists of sources to exclude, [see here](https://www.cyberciti.biz/faq/lftp-command-mirror-x-exclude-files-sub-directory-syntax/) for details. (Example: temp/,freeleech/) |
 | SSH_PORT | string | 22 | The ssh port used to  connect to the source server |
@@ -70,12 +72,6 @@ This project is designed to be developed with VS code and the [Dev Containers](h
 
 > [!IMPORTANT]
 > In development, a `.env` file is expected. You can copy `sample.env` to make a `.env` file for testing.
-
-To start the project at the resulting dev container command line, issue the following command:
-
-```
-python3 /usr/src/tyzen9/main.py 
-```
 
 ## Development Environment Requirements
 - Docker Engine 
@@ -92,11 +88,21 @@ The following extensions are recommended to be installed in VS Code:
 ### Open the project in a Docker Dev Container for development using VS Code
 1. Install the Recommended extensions (above):
 2. Ensure Docker Desktop (or another Docker service) is running on your system.
-3. In VS Code, Open the Command Palette (Ctrl+Shift+P or Cmd+Shift+P), and Select Dev Containers: `Reopen in Container`
+3. In VS Code, Open the Command Palette (Ctrl+Shift+P or Cmd+Shift+P), and Select `Dev Containers: Reopen in Container`
     - VS Code will build the container based on the `.devcontainer/devcontainer.json` configuration 
       The first build might take some time, but subsequent openings will be faster.
 7. Develop Inside the Container. 
     - Once connected, you can use all of VS Code's features (e.g., IntelliSense, debugging) as if working locally.
+
+To start the project in the resulting dev container issue this command line is a VSCode terminal:
+
+```
+python3 /usr/src/tyzen9/main.py 
+```
+
+> [!IMPORTANT]
+> There is no hot reload configured, each time you update main.py, you need to run `Rebuild Container` in Dev Container.
+
 
 ## Build & Publish
 Update the `Makefile` to contain the appropriate Docker Hub username, application name and version number
