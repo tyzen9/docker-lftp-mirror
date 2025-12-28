@@ -2,6 +2,8 @@ services:
   lftp-mirror:
     image: tyzen9/lftp-mirror:latest
     container_name: lftp-mirror
+    restart: always
+    init: true  
     environment:
       - TZ_ID=${TZ_ID}
       - PUID=${PUID:-1000}
