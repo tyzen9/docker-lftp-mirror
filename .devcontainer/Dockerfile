@@ -1,7 +1,7 @@
 FROM python:3-alpine
 
 # ---- Build args for OCI labels ------------------------------------------------
-ARG VERSION=1.0.1
+ARG VERSION=1.0.2
 ARG GIT_COMMIT=unknown
 ARG BUILD_DATE=unknown
 
