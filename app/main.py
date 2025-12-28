@@ -155,7 +155,13 @@ def main():
     logging.info(exclude_string)
 
     # Construct the lftp command
-    lftp_command = f"/usr/bin/lftp -u {SSH_USERNAME},{SSH_PASSWORD} -e \"mirror --continue --verbose --delete --parallel=5 --use-pget-n=5 {exclude_string} {SOURCE_DIR} {TARGET_DIR}; quit\" sftp://{SOURCE_HOSTNAME}:{SSH_PORT}"
+    # lftp_command = f"/usr/bin/lftp -u {SSH_USERNAME},{SSH_PASSWORD} -e \"mirror --continue --verbose --delete --parallel=5 --use-pget-n=5 {exclude_string} {SOURCE_DIR} {TARGET_DIR}; quit\" sftp://{SOURCE_HOSTNAME}:{SSH_PORT}"
+    # FIX: Pass lftp_command as a list to eliminate shell=True
+    lftp_command = [
+        '/usr/bin/lftp', '-u', f'{SSH_USERNAME},{SSH_PASSWORD}',
+        '-e', f'mirror --continue --verbose --delete --parallel=5 --use-pget-n=5 {exclude_string} {SOURCE_DIR} {TARGET_DIR}; quit',
+        f'sftp://{SOURCE_HOSTNAME}:{SSH_PORT}'
+    ]
 
     while True:
         logging.info(f'---------------------------------------------------------')
@@ -163,7 +169,8 @@ def main():
 
         # Run the command
         try:
-            result = subprocess.run(lftp_command, check=True, text=True, capture_output=True, shell=True)
+            # result = subprocess.run(lftp_command, check=True, text=True, capture_output=True, shell=True)
+            result = subprocess.run(lftp_cmd, check=True, text=True, capture_output=True)  # No shell=True
             logging.info(f"Output: {result.stdout}")
             logging.info(f"Errors (if any): {result.stderr}")
         except subprocess.CalledProcessError as e:
