@@ -86,22 +86,27 @@ The following extensions are recommended to be installed in VS Code:
 - [Python](https://marketplace.visualstudio.com/items/?itemName=ms-python.python)
 
 ### Open the project in a Docker Dev Container for development using VS Code
-1. Install the Recommended extensions (above):
-2. Ensure Docker Desktop (or another Docker service) is running on your system.
-3. In VS Code, Open the Command Palette (Ctrl+Shift+P or Cmd+Shift+P), and Select `Dev Containers: Reopen in Container`
-    - VS Code will build the container based on the `.devcontainer/devcontainer.json` configuration 
-      The first build might take some time, but subsequent openings will be faster.
-7. Develop Inside the Container. 
-    - Once connected, you can use all of VS Code's features (e.g., IntelliSense, debugging) as if working locally.
-
-To start the project in the resulting dev container issue this command line is a VSCode terminal:
-
-```
-python3 /usr/src/tyzen9/main.py 
-```
+1. Clone this repository and open the project folder in VS Code.
+2. Install the recommended extensions listed above.
+3. Ensure Docker Desktop (or another Docker service) is running on your system.
+4. Copy `sample.env` to `.env` and fill in your values before opening the container:
+    ```
+    cp sample.env .env
+    ```
+5. Open the Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`) and select:
+    - `Dev Containers: Reopen in Container` — if the project folder is already open in VS Code
+    - `Dev Containers: Open Folder in Container` — if opening for the first time
+    - VS Code will build the container based on `.devcontainer/devcontainer.json`. The first build may take a few minutes; subsequent openings will be faster.
+6. Once connected, you can use all of VS Code's features (e.g., IntelliSense, debugging) as if working locally.
 
 > [!IMPORTANT]
-> There is no hot reload configured, each time you update main.py, you need to run `Rebuild Container` in Dev Container.
+> There is no hot reload configured. Each time you update `main.py`, run `Dev Containers: Rebuild Container` from the Command Palette for changes to take effect.
+
+To start the project inside the dev container, run this in the VS Code terminal:
+
+```
+python3 /usr/src/tyzen9/main.py
+```
 
 
 ## Build & Publish
@@ -119,7 +124,7 @@ To build images of this container, use this command in the root directory of the
 make build
 ```
 
-To publish th built images to to Docker Hub use this command in the root directory of the project:
+To publish the built images to to Docker Hub use this command in the root directory of the project:
 
 To build use this command:
 ```
