@@ -1,3 +1,5 @@
 .env
 .vscode
 .local_build*
+test/
+downloads/
