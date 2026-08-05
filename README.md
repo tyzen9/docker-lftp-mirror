@@ -66,6 +66,10 @@ These environment variables are optional, and could be used to adjust functional
 | SOURCE_EXCLUDES | string | "\<empty\>" | A comma separated lists of sources to exclude, [see here](https://www.cyberciti.biz/faq/lftp-command-mirror-x-exclude-files-sub-directory-syntax/) for details. (Example: temp/,freeleech/) |
 | SSH_PORT | string | 22 | The ssh port used to  connect to the source server |
 | LOG_LEVEL | string | INFO | Valid values: DEBUG, INFO, WARNING, ERROR, CRITICAL  |
+| STALL_TIMEOUT | number | 900 | The number of seconds without lftp progress before a sync is considered stalled and killed. Also used by the container's `HEALTHCHECK` to decide how stale the heartbeat is allowed to get before reporting unhealthy |
+
+## Healthcheck
+The image defines a Docker `HEALTHCHECK` that runs `app/healthcheck.py` every 60 seconds. `main.py` touches a heartbeat file (`/tmp/heartbeat`) at the start of each sync cycle and on every line of `lftp` output; a watchdog thread kills the `lftp` process if no output is seen for `STALL_TIMEOUT` seconds, so a dead SFTP connection can't hang forever. The healthcheck reports unhealthy if the heartbeat file is missing or older than `UPDATE_INTERVAL + STALL_TIMEOUT` (plus a small grace period), which lets orchestrators (e.g. Docker Compose `restart: unless-stopped`, Kubernetes liveness probes) detect and restart a hung container.
 
 # Development
 This project is designed to be developed with VS code and the [Dev Containers](https://marketplace.visualstudio.com/items/?itemName=ms-vscode-remote.remote-containers) extension. When testing LFTP transfers, the development environment is set to mirror a provided source server with the local `downloads` file.

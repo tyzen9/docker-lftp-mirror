@@ -20,6 +20,14 @@ SOURCE_HOSTNAME = os.getenv("SOURCE_HOSTNAME")
 SSH_PORT = int(os.environ.get('SSH_PORT', '22'))
 UPDATE_INTERVAL = int(os.environ.get('UPDATE_INTERVAL', '300'))
 
+# Heartbeat file used by healthcheck.py to detect a hung sync. Touched at the
+# start of every cycle and on every line of lftp output, so a stalled SFTP
+# connection (no output, no progress) shows up as a stale heartbeat.
+HEARTBEAT_FILE = os.environ.get('HEARTBEAT_FILE', '/tmp/heartbeat')
+# How long to wait with no lftp output before treating the transfer as stalled
+# and killing it, rather than hanging forever on a dead connection.
+STALL_TIMEOUT = int(os.environ.get('STALL_TIMEOUT', '900'))
+
 # Validate that all required environment variables are set
 required_vars = {
     "SSH_USERNAME": SSH_USERNAME,
@@ -124,8 +132,21 @@ def split_with_escaped_commas(input_string):
     return result
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+def touch_heartbeat():
+    """Record proof of life/progress for healthcheck.py to read."""
+    try:
+        with open(HEARTBEAT_FILE, "a"):
+            os.utime(HEARTBEAT_FILE, None)
+    except OSError as e:
+        logging.debug(f"Failed to touch heartbeat file: {e}")
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def run_lftp(command):
-    """Run lftp and stream output in real time, logging file transfer events."""
+    """Run lftp and stream output in real time, logging file transfer events.
+    A watchdog thread kills the lftp process if no output is seen for
+    STALL_TIMEOUT seconds — otherwise a dropped/stalled SFTP connection can
+    leave process.wait() blocked forever with no way to recover.
+    """
     current_file = None
     downloaded = 0
     removed = 0
@@ -133,6 +154,7 @@ def run_lftp(command):
     def drain_stdout(pipe):
         nonlocal current_file, downloaded, removed
         for line in pipe:
+            touch_heartbeat()
             line = line.rstrip()
             if not line:
                 continue
@@ -158,31 +180,53 @@ def run_lftp(command):
 
     def drain_stderr(pipe):
         for line in pipe:
+            touch_heartbeat()
             line = line.rstrip()
             if line:
                 logging.warning(f"lftp: {line}")
 
+    def watch_for_stall(process, stop_event):
+        while not stop_event.wait(15):
+            age = time.time() - os.path.getmtime(HEARTBEAT_FILE)
+            if age > STALL_TIMEOUT:
+                logging.error(f"⚠️  No lftp progress for {int(age)}s — killing stalled transfer")
+                process.kill()
+                return
+
+    touch_heartbeat()
     process = subprocess.Popen(
         command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         text=True, shell=True, bufsize=1
     )
+    stop_event = threading.Event()
     t_out = threading.Thread(target=drain_stdout, args=(process.stdout,))
     t_err = threading.Thread(target=drain_stderr, args=(process.stderr,))
+    t_watch = threading.Thread(target=watch_for_stall, args=(process, stop_event))
     t_out.start()
     t_err.start()
+    t_watch.start()
     process.wait()
+    stop_event.set()
     t_out.join()
     t_err.join()
+    t_watch.join()
     return process.returncode, downloaded, removed
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def main():
 
+    # Seed the heartbeat immediately so healthcheck.py has something to read
+    # before the first cycle completes.
+    touch_heartbeat()
+
     # Acquire the host key
     logging.info(f"🔑 Acquiring host key from {SOURCE_HOSTNAME}...")
     keyscan_command = f"ssh-keyscan -p {SSH_PORT} {SOURCE_HOSTNAME} >> ~/.ssh/known_hosts"
     try:
-        result = subprocess.run(keyscan_command, check=True, text=True, capture_output=True, shell=True)
+        result = subprocess.run(keyscan_command, check=True, text=True, capture_output=True, shell=True, timeout=30)
+    except subprocess.TimeoutExpired:
+        logging.fatal(f"Timed out waiting for ssh-keyscan against {SOURCE_HOSTNAME}")
+        sys.exit(1)
     except subprocess.CalledProcessError as e:
         logging.fatal(f"Command failed with exit code {e.returncode}")
         logging.fatal(f"Errors: {e.stderr}")
@@ -235,6 +279,7 @@ def main():
 
         next_run = datetime.now() + timedelta(seconds=UPDATE_INTERVAL)
         logging.info(f"⏳ Next sync at {next_run.strftime('%H:%M:%S')}")
+        touch_heartbeat()
         time.sleep(UPDATE_INTERVAL)
 
 ###########################################

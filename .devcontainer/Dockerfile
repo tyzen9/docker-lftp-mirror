@@ -52,3 +52,10 @@ COPY app/entrypoint.sh /usr/local/bin/lftp-mirror
 RUN chmod +x /usr/local/bin/lftp-mirror
 # --- NOTE: This is NOT executed when starting a dev container
 ENTRYPOINT ["lftp-mirror"]
+
+# ---- Healthcheck --------------------------------------------------------------
+# Fails if the main loop's heartbeat file goes stale, which happens when a
+# sync hangs (e.g. a dead SFTP connection) longer than UPDATE_INTERVAL +
+# STALL_TIMEOUT allow for. See app/healthcheck.py.
+HEALTHCHECK --interval=60s --timeout=10s --start-period=90s --retries=3 \
+    CMD python3 /usr/src/tyzen9/healthcheck.py
