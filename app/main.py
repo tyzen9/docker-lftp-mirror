@@ -8,6 +8,8 @@ import logging
 from datetime import datetime, timedelta
 from colorlog import ColoredFormatter
 
+import web
+
 ###########################################
 # Process environment variables
 ###########################################
@@ -165,11 +167,13 @@ def run_lftp(command):
                 if current_file:
                     downloaded += 1
                     logging.info(f"    ☑️  Completed: {current_file}")
+                    web.record_event("download", current_file)
                 current_file = transfer_match.group(1)
                 logging.info(f"  🟢 Downloading: {current_file}")
             elif remove_match:
                 removed += 1
                 logging.info(f"  🗑️  Removing:   {remove_match.group(1)}")
+                web.record_event("remove", remove_match.group(1))
             elif mkdir_match:
                 logging.info(f"  📁 mkdir:      {mkdir_match.group(1)}")
             else:
@@ -177,6 +181,7 @@ def run_lftp(command):
         if current_file:
             downloaded += 1
             logging.info(f"    ☑️  Completed: {current_file}")
+            web.record_event("download", current_file)
 
     def drain_stderr(pipe):
         for line in pipe:
@@ -218,6 +223,10 @@ def main():
     # Seed the heartbeat immediately so healthcheck.py has something to read
     # before the first cycle completes.
     touch_heartbeat()
+
+    # Serve /status and /events for external consumers (e.g. a Home
+    # Assistant RESTful sensor) over HTTP.
+    web.start_server()
 
     # Acquire the host key
     logging.info(f"🔑 Acquiring host key from {SOURCE_HOSTNAME}...")
@@ -266,19 +275,28 @@ def main():
         header = f'--- Sync #{cycle} '
         logging.info(header + '-' * max(0, 57 - len(header)))
         logging.debug(f"Command to execute \"{lftp_command}\"")
+        web.update_state(cycle=cycle, last_sync_start=time.time())
 
         # Run the command
         try:
             returncode, downloaded, removed = run_lftp(lftp_command)
             if returncode != 0:
                 logging.error(f"lftp failed with exit code {returncode}")
+                web.update_state(last_error=f"lftp exited with code {returncode}")
             else:
                 logging.info(f"✅ Sync complete — {downloaded} downloaded, {removed} removed")
+                web.update_state(last_error=None)
+            web.update_state(
+                downloaded=downloaded, removed=removed,
+                last_sync_end=time.time(), last_sync_success=(returncode == 0),
+            )
         except Exception as e:
             logging.error(f"Failed to run lftp: {e}")
+            web.update_state(last_error=str(e), last_sync_success=False, last_sync_end=time.time())
 
         next_run = datetime.now() + timedelta(seconds=UPDATE_INTERVAL)
         logging.info(f"⏳ Next sync at {next_run.strftime('%H:%M:%S')}")
+        web.update_state(next_sync=next_run.isoformat())
         touch_heartbeat()
         time.sleep(UPDATE_INTERVAL)
 

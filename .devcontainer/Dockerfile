@@ -23,7 +23,8 @@ RUN apk add --no-cache \
         curl \
         lftp \
         openssh \
-        gosu
+        gosu \
+        tzdata
         
 # Set the working directory inside of the image's filesystem
 WORKDIR /usr/src
@@ -59,3 +60,8 @@ ENTRYPOINT ["lftp-mirror"]
 # STALL_TIMEOUT allow for. See app/healthcheck.py.
 HEALTHCHECK --interval=60s --timeout=10s --start-period=90s --retries=3 \
     CMD python3 /usr/src/tyzen9/healthcheck.py
+
+# ---- Status API -----------------------------------------------------------
+# Serves /status and /events (recent download/remove history) over HTTP for
+# external consumers such as a Home Assistant RESTful sensor. See app/web.py.
+EXPOSE 8080

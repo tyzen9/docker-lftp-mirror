@@ -3,3 +3,4 @@
 .local_build*
 test/
 downloads/
+__pycache__/

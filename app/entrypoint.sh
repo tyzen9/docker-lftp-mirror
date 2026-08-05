@@ -45,6 +45,11 @@ touch "$SSH_DIR/known_hosts"
 chmod 600 "$SSH_DIR/known_hosts"
 chown "$PUID:$PGID" "$SSH_DIR/known_hosts"
 
+# Create a place to hold the transfer history log served by the web API
+HISTORY_DIR=$(dirname "${HISTORY_FILE:-/var/log/lftp-mirror/history.jsonl}")
+mkdir -p "$HISTORY_DIR"
+chown "$PUID:$PGID" "$HISTORY_DIR"
+
 # Output some initialization params to make sure this is working
 echo "⌛ Initializing environment as follows:"
 echo "Runtime UID: $PUID"

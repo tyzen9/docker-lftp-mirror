@@ -13,5 +13,7 @@ services:
       - SSH_PASSWORD=${SSH_PASSWORD}
       - SOURCE_DIR=${SOURCE_DIR}
       - SOURCE_EXCLUDES=${SOURCE_EXCLUDES}
+    ports:
+      - "${WEB_PORT:-8080}:8080"
     volumes:
       - ${LOCAL_TARGET_DIR}:/downloads
